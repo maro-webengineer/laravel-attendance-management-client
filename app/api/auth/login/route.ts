@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password } = body
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://web'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost'
     console.log('🔍 API URL:', apiUrl)
 
     // Step 1: CSRFクッキーを取得
