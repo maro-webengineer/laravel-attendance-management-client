@@ -20,7 +20,7 @@ export default function DashboardPage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('http://localhost/api/v1/me', {
+      const response = await fetch('/api/auth/user', {
         credentials: 'include',
       })
 
@@ -42,12 +42,16 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost/api/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       })
 
-      router.push('/login')
+      if (response.ok) {
+        router.push('/login?message=logged_out')
+      } else {
+        console.error('ログアウトに失敗:', response.status)
+      }
     } catch (error) {
       console.error('ログアウトに失敗:', error)
     }
@@ -56,7 +60,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">読み込み中...</div>
+        <div className="text-gray-600">認証情報を確認中...</div>
       </div>
     )
   }

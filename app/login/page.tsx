@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -9,6 +9,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const messageType = searchParams.get('message')
+
+    if (messageType === 'logged_out') {
+      setError('ログアウトしました。')
+
+      const timer = setTimeout(() => {
+        setError('')
+
+        window.history.replaceState({}, '', '/login')
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

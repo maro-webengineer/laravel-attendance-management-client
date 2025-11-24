@@ -6,10 +6,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = body
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost'
-    console.log('🔍 API URL:', apiUrl)
 
-    // Step 1: CSRFクッキーを取得
-    console.log('📝 Step 1: CSRFトークン取得中...')
     const csrfResponse = await fetch(`${apiUrl}/sanctum/csrf-cookie`, {
       method: 'GET',
       credentials: 'include',
@@ -30,15 +27,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('🍪 取得したクッキー:', allCookies)
-
     // XSRF-TOKENを抽出
     let xsrfToken = ''
     for (const cookie of allCookies) {
       const xsrfMatch = cookie.match(/XSRF-TOKEN=([^;]+)/)
       if (xsrfMatch) {
         xsrfToken = decodeURIComponent(xsrfMatch[1])
-        console.log('✅ XSRFトークン抽出成功:', xsrfToken.substring(0, 20) + '...')
         break
       }
     }
@@ -51,11 +45,6 @@ export async function POST(request: NextRequest) {
         return match ? match[1] : cookie.split(';')[0]
       })
       .join('; ')
-
-    console.log('✅ クッキー文字列:', cookieString.substring(0, 100) + '...')
-
-    // Step 2: ログインリクエスト
-    console.log('🔐 Step 2: ログインリクエスト送信中...')
 
     // リクエストのOriginとRefererを動的に取得（これがないと405エラーになる）
     const origin = request.headers.get('origin') || 'http://localhost:3000'
@@ -75,10 +64,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ email, password }),
     })
 
-    console.log('📡 ログインレスポンスステータス:', loginResponse.status)
-
     const data = await loginResponse.json()
-    console.log('📦 レスポンスデータ:', data)
+    console.log('📦 loginResponseeeees:', loginResponse)
 
     if (!loginResponse.ok) {
       return NextResponse.json(
@@ -91,15 +78,24 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json(data)
 
     // LaravelのセッションクッキーをNext.jsのレスポンスに追加
-    const loginCookies = loginResponse.headers.get('set-cookie')
-    if (loginCookies) {
-      response.headers.set('set-cookie', loginCookies)
-    }
-    console.log('response前 : ')
+    // 複数のSet-Cookieヘッダーがある場合に対応
+    const setCookieHeaders: string[] = []
+    loginResponse.headers.forEach((value, key) => {
+      if (key.toLowerCase() === 'set-cookie') {
+        setCookieHeaders.push(value)
+      }
+    })
+
+    // すべてのSet-Cookieヘッダーを転送（属性を維持）
+    setCookieHeaders.forEach(cookie => {
+      // クッキーの属性（domain、path、sameSite、secureなど）を維持
+      // Next.jsのappendは完全なSet-Cookieヘッダーをそのまま転送する
+      response.headers.append('set-cookie', cookie)
+    })
+
     return response
 
   } catch (error) {
-    console.error('❌ ログインエラー:', error)
     if (error instanceof Error) {
       console.error('メッセージ:', error.message)
       console.error('スタック:', error.stack)
