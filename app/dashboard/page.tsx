@@ -15,30 +15,28 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetchUser()
-  }, [])
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include',
+        })
 
-  const fetchUser = async () => {
-    try {
-      const response = await fetch('/api/auth/user', {
-        credentials: 'include',
-      })
+        if (!response.ok) {
+          // 認証エラーの場合、ログインページへ
+          router.push('/login')
+          return
+        }
 
-      if (!response.ok) {
-        // 認証エラーの場合、ログインページへ
+        const datas = await response.json()
+        setUser(datas.data)
+        setIsLoading(false)
+      } catch (error) {
+        console.error('ユーザー情報の取得に失敗:', error)
         router.push('/login')
-        return
       }
-
-      const datas = await response.json()
-      setUser(datas.data)
-    } catch (error) {
-      console.error('ユーザー情報の取得に失敗:', error)
-      router.push('/login')
-    } finally {
-      setIsLoading(false)
     }
-  }
+    fetchUser()
+  }, [router])
 
   const handleLogout = async () => {
     try {
