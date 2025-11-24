@@ -7,13 +7,6 @@ export async function GET(request: NextRequest) {
     // クライアントから送られてくるクッキーを取得
     const cookieHeader = request.headers.get('cookie') || ''
 
-    // クッキーを解析して確認
-    const cookies = cookieHeader.split(';').map(c => c.trim())
-
-    cookies.forEach((cookie, index) => {
-      const [name] = cookie.split('=')
-    })
-
     if (!cookieHeader) {
       return NextResponse.json(
         { message: '認証情報がありません' },
@@ -30,8 +23,6 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    console.log('📡 ユーザー情報レスポンスステータス:', meResponse.status)
-
     if (!meResponse.ok) {
       const errorText = await meResponse.text()
       console.error('❌ エラーレスポンス:', errorText)
@@ -42,7 +33,6 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await meResponse.json()
-    console.log('📦 レスポンスデータ:', data)
 
     // レスポンスをそのまま返す
     const response = NextResponse.json(data)

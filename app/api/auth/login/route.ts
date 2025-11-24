@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
     })
 
     const data = await loginResponse.json()
-    console.log('📦 loginResponseeeees:', loginResponse)
 
     if (!loginResponse.ok) {
       return NextResponse.json(
